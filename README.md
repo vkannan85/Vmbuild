@@ -16,7 +16,8 @@ can enter them manually per deployment.
 | `main.tf`                    | Marketplace terms, Linux/Windows VM resources         |
 | `network.tf`                 | Resource group, VNet, subnet, NSG, NIC, public IP      |
 | `outputs.tf`                 | IPs, VM id, generated password, etc.                   |
-| `terraform.tfvars.example`   | **Parameters file template** — copy and fill in       |
+| `terraform.tfvars.example`   | **Parameters file template (Linux)** — copy and fill in |
+| `terraform.tfvars.windows.example` | **Parameters file template (Windows)** — copy and fill in |
 
 ## Usage
 
@@ -26,9 +27,13 @@ can enter them manually per deployment.
    az account set --subscription "<subscription-id>"
    ```
 
-2. Copy the parameters template and fill in your values:
+2. Copy the parameters template that matches the OS you want and fill in your values:
    ```bash
+   # Linux
    cp terraform.tfvars.example terraform.tfvars
+
+   # or Windows
+   cp terraform.tfvars.windows.example terraform.tfvars
    ```
    Edit `terraform.tfvars` and set at minimum:
    - `resource_group_name`, `location`
@@ -56,7 +61,10 @@ can enter them manually per deployment.
 
 ## Notes
 
-- `terraform.tfvars` is gitignored (it may contain credentials) — only the `.example` template is committed.
+- `terraform.tfvars` is gitignored (it may contain credentials) — only the `.example` templates are committed.
+- `terraform.tfvars.windows.example` uses `os_type = "windows"`, a Windows Server 2022 Datacenter Azure Edition
+  image, `admin_password` instead of an SSH key (`disable_password_authentication = false`), and opens port
+  `3389` (RDP) instead of `22` (SSH).
 - Set `accept_marketplace_terms = true` for third-party/BYOL marketplace images that require accepting legal
   terms before first deployment; leave `false` for standard first-party images (e.g. Canonical Ubuntu, most
   Microsoft-published images).

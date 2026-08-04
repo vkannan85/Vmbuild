@@ -1,0 +1,65 @@
+############################################
+# PARAMETERS FILE (Windows example)
+# Copy this to terraform.tfvars and fill in
+# the values for your deployment.
+############################################
+
+# --- Subscription / General ---
+subscription_id     = null # or "00000000-0000-0000-0000-000000000000"
+resource_group_name = "rg-example-winvm"
+location             = "eastus"
+
+tags = {
+  environment = "dev"
+  owner       = "your-name"
+}
+
+# --- VM identity / sizing ---
+vm_name = "example-winvm01"
+vm_size = "Standard_D2s_v5"
+os_type = "windows" # "linux" or "windows"
+
+# --- Marketplace image ---
+# Example below is Windows Server 2022 Datacenter (Azure Edition), first-party
+# Microsoft image, no plan needed.
+# Find publisher/offer/sku values with:
+#   az vm image list --all --publisher MicrosoftWindowsServer --offer WindowsServer --output table
+image_publisher = "MicrosoftWindowsServer"
+image_offer     = "WindowsServer"
+image_sku       = "2022-datacenter-azure-edition"
+image_version   = "latest"
+
+# Set to true only for marketplace images that require accepting legal terms
+# (typically third-party/BYOL offers). Leave false for first-party images
+# like this one.
+accept_marketplace_terms = false
+
+# Only required for images that need a "plan" block (rare, third-party offers).
+# Leave blank for standard images like the one above.
+plan_name      = ""
+plan_publisher = ""
+plan_product   = ""
+
+# --- OS disk ---
+os_disk_caching              = "ReadWrite"
+os_disk_storage_account_type = "StandardSSD_LRS"
+os_disk_size_gb               = null # leave null to use the image default
+
+# --- Authentication ---
+# Windows has no SSH key option — admin_password is required.
+# Leave it blank to auto-generate one (retrieve with `terraform output -raw admin_password`).
+admin_username                  = "azureadmin"
+admin_password                  = "" # leave blank to auto-generate, or set your own (must meet Azure's complexity rules)
+disable_password_authentication = false # must be false for Windows
+ssh_public_key                  = ""    # not used for Windows
+
+# --- Networking ---
+vnet_address_space         = ["10.0.0.0/16"]
+subnet_address_prefix      = ["10.0.1.0/24"]
+allocate_public_ip          = true
+public_ip_allocation_method = "Static"
+public_ip_sku                = "Standard"
+
+# RDP instead of SSH for Windows
+open_inbound_ports         = [3389]
+open_inbound_source_ranges = ["0.0.0.0/0"] # restrict to your own IP/CIDR in production
