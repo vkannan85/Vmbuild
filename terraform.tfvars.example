@@ -1,0 +1,60 @@
+############################################
+# PARAMETERS FILE
+# Copy this to terraform.tfvars and fill in
+# the values for your deployment.
+############################################
+
+# --- Subscription / General ---
+subscription_id     = null # or "00000000-0000-0000-0000-000000000000"
+resource_group_name = "rg-example-vm"
+location             = "eastus"
+
+tags = {
+  environment = "dev"
+  owner       = "your-name"
+}
+
+# --- VM identity / sizing ---
+vm_name = "example-vm01"
+vm_size = "Standard_B2s"
+os_type = "linux" # "linux" or "windows"
+
+# --- Marketplace image ---
+# Example below is Ubuntu Server 22.04 LTS (Canonical, first-party, no plan needed).
+# Find publisher/offer/sku values with:
+#   az vm image list --all --publisher Canonical --offer 0001-com-ubuntu-server-jammy --output table
+image_publisher = "Canonical"
+image_offer     = "0001-com-ubuntu-server-jammy"
+image_sku       = "22_04-lts-gen2"
+image_version   = "latest"
+
+# Set to true only for marketplace images that require accepting legal terms
+# (typically third-party/BYOL offers). Leave false for first-party images.
+accept_marketplace_terms = false
+
+# Only required for images that need a "plan" block (rare, third-party offers).
+# Leave blank for standard images like the Ubuntu example above.
+plan_name      = ""
+plan_publisher = ""
+plan_product   = ""
+
+# --- OS disk ---
+os_disk_caching              = "ReadWrite"
+os_disk_storage_account_type = "StandardSSD_LRS"
+os_disk_size_gb               = null # leave null to use the image default
+
+# --- Authentication ---
+admin_username                  = "azureadmin"
+admin_password                  = ""   # leave blank to auto-generate (see `terraform output admin_password`)
+disable_password_authentication = true # Linux only; set false to use admin_password instead of SSH key
+ssh_public_key                  = ""   # e.g. paste contents of ~/.ssh/id_rsa.pub (Linux, when disable_password_authentication = true)
+
+# --- Networking ---
+vnet_address_space         = ["10.0.0.0/16"]
+subnet_address_prefix      = ["10.0.1.0/24"]
+allocate_public_ip          = true
+public_ip_allocation_method = "Static"
+public_ip_sku                = "Standard"
+
+open_inbound_ports         = [22]          # e.g. [3389] for Windows RDP
+open_inbound_source_ranges = ["0.0.0.0/0"] # restrict to your own IP/CIDR in production
