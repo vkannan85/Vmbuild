@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AVD Deployment Portal</title><link rel="stylesheet" href="/static/style.css"></head>
+<body>
+<header><div><div class="eyebrow">AZURE SELF-SERVICE</div><h1>AVD Deployment Portal</h1><p>Build a governed Azure Virtual Desktop deployment request.</p></div><span class="badge">AVD</span></header>
+<main>
+<div class="steps"><span class="active">1 Basics</span><span>2 Host pool</span><span>3 Session hosts</span><span>4 Network</span><span>5 Review</span></div>
+<form id="form">
+<section><h2>Deployment basics</h2><div class="grid">
+<label>Request name<input name="request_name" value="AVD-UK-001" required></label><label>Owner<input name="owner" placeholder="team or requester"></label>
+<label>Environment<select name="environment"><option>Non-Production</option><option>Production</option><option>Development</option><option>Test</option></select></label>
+<label>Azure subscription ID<input name="subscription_id" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" required></label>
+<label>Resource group<input name="resource_group" value="rg-avd-uks-001" required></label><label>Region<select name="location">{% for x in regions %}<option>{{x}}</option>{% endfor %}</select></label></div></section>
+<section><h2>Host pool</h2><div class="grid"><label>Host pool name<input name="host_pool_name" value="hp-avd-uks-001" required></label><label>Type<select name="host_pool_type"><option>Pooled</option><option>Personal</option></select></label><label>Load balancing<select name="load_balancing"><option>Breadth-first</option><option>Depth-first</option></select></label><label>Max sessions per host<input type="number" name="max_session_limit" value="10" min="1"></label><label>Workspace<input name="workspace_name" value="ws-avd-uks-001" required></label><label>Application group<input name="application_group" value="Desktop Application Group"></label></div></section>
+<section><h2>Session hosts</h2><div class="grid"><label>VM prefix<input name="session_host_prefix" value="avdsh" required></label><label>Number of hosts<input type="number" name="session_host_count" value="2" min="1" max="100"></label><label>VM size<select name="vm_size">{% for x in vm_sizes %}<option>{{x}}</option>{% endfor %}</select></label><label>OS disk (GB)<select name="os_disk_gb"><option>128</option><option>256</option><option>512</option></select></label><label class="wide">Image<select name="image">{% for x in images %}<option>{{x}}</option>{% endfor %}</select></label><label>Join type<select name="join_type"><option>Microsoft Entra ID</option><option>Active Directory</option></select></label></div></section>
+<section><h2>Network & operations</h2><div class="grid"><label>Existing VNet<input name="vnet_name" placeholder="vnet-hubspoke-uks-001" required></label><label>Session host subnet<input name="subnet_name" placeholder="snet-avd-sessionhosts" required></label><label>Scaling plan<select name="scaling_plan"><option>Business Hours</option><option>Always On</option><option>Custom</option></select></label><label class="check"><input type="checkbox" name="start_vm_on_connect" checked> Start VM on Connect</label></div></section>
+<div class="actions"><button type="button" class="secondary" onclick="preview()">Validate & Review</button><button type="button" onclick="deploy()">Prepare Deployment</button></div>
+</form>
+<section id="review" class="review hidden"><div class="reviewhead"><h2>Deployment specification</h2><span id="valid"></span></div><pre id="output"></pre></section>
+</main><footer>AVD Deployment Portal · Terraform-ready request workflow</footer>
+<script>
+const form=document.getElementById('form'); function data(){const f=new FormData(form),o=Object.fromEntries(f.entries());o.start_vm_on_connect=f.has('start_vm_on_connect');return o}
+async function preview(){let d=data();let v=await fetch('/api/validate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)}).then(r=>r.json());let box=document.getElementById('review');box.classList.remove('hidden');let valid=document.getElementById('valid');if(!v.valid){valid.textContent='Needs attention';valid.className='bad';document.getElementById('output').textContent=v.errors.join('\n');box.scrollIntoView({behavior:'smooth'});return}let p=await fetch('/api/preview',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)}).then(r=>r.json());valid.textContent='Validated';valid.className='good';document.getElementById('output').textContent=JSON.stringify(p,null,2);box.scrollIntoView({behavior:'smooth'})}
+async function deploy(){await preview();let d=data();let r=await fetch('/api/deploy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)}).then(r=>r.json());alert(r.message)}
+</script></body></html>
